@@ -1,6 +1,6 @@
 class MyparserController < ApplicationController
   def index
-    calendar_response = Faraday.new.get('http://www.weeia.p.lodz.pl/pliki_strony_kontroler/kalendarz.php?rok=2019&miesiac=12').body.html_safe
+    calendar_response = Faraday.new.get("http://www.weeia.p.lodz.pl/pliki_strony_kontroler/kalendarz.php?rok=#{params[:rok]}&miesiac=#{params[:miesiac]}").body.html_safe
     page = Nokogiri::HTML.parse(calendar_response)
 
     days = []
@@ -24,8 +24,9 @@ class MyparserController < ApplicationController
 
     days.each_with_index do |day, index|
       cal.event do |e|
-        starts_at     = DateTime.new(2019, 12, day.to_i).beginning_of_day
-        ends_at       = DateTime.new(2019, 12, day.to_i).end_of_day
+        starts_at     = DateTime.new(params[:rok].to_i, params[:miesiac].to_i, day.to_i).beginning_of_day
+        ends_at       = DateTime.new(params[:rok].to_i, params[:miesiac].to_i, day.to_i).end_of_day
+        e.summary     = descriptions[index]
         e.dtstart     = Icalendar::Values::DateTime.new(starts_at)
         e.dtend       = Icalendar::Values::DateTime.new(ends_at)
         e.description = descriptions[index]
@@ -35,8 +36,6 @@ class MyparserController < ApplicationController
     cal.publish
 
     send_data cal.to_ical, type: 'text/calendar', disposition: 'attachment', filename: filename
-
-    # render html: calendar_response
   end
 end
 
