@@ -1,6 +1,6 @@
 class MyparserController < ApplicationController
   def index
-    calendar_response = Faraday.new.get("http://www.weeia.p.lodz.pl/pliki_strony_kontroler/kalendarz.php?rok=#{params[:rok]}&miesiac=#{params[:miesiac]}").body.html_safe
+    calendar_response = Faraday.new.get("http://www.weeia.p.lodz.pl/pliki_strony_kontroler/kalendarz.php?rok=#{params[:year]}&miesiac=#{params[:month]}").body.html_safe
     page = Nokogiri::HTML.parse(calendar_response)
 
     days = []
@@ -16,7 +16,7 @@ class MyparserController < ApplicationController
     end
 
     cal = Icalendar::Calendar.new
-    filename = "siemaelo"
+    filename = "calendar"
 
     cal.prodid = '-//Acme Widgets, Inc.//NONSGML ExportToCalendar//EN'
     cal.version = '2.0'
@@ -24,8 +24,8 @@ class MyparserController < ApplicationController
 
     days.each_with_index do |day, index|
       cal.event do |e|
-        starts_at     = DateTime.new(params[:rok].to_i, params[:miesiac].to_i, day.to_i).beginning_of_day
-        ends_at       = DateTime.new(params[:rok].to_i, params[:miesiac].to_i, day.to_i).end_of_day
+        starts_at     = DateTime.new(params[:year].to_i, params[:month].to_i, day.to_i).beginning_of_day
+        ends_at       = DateTime.new(params[:year].to_i, params[:month].to_i, day.to_i).end_of_day
         e.summary     = descriptions[index]
         e.dtstart     = Icalendar::Values::DateTime.new(starts_at)
         e.dtend       = Icalendar::Values::DateTime.new(ends_at)
